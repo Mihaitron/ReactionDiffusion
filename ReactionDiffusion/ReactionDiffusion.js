@@ -3,7 +3,7 @@ var newGrid = [];
 
 var dA = 1;
 var dB = 0.5;
-var feed = 0.055;
+var feed = 0.0545;
 var kill = 0.062;
 var deltaT = 1;
 
@@ -22,9 +22,9 @@ function setup()
     }
   }
   
-  for (i = 100; i < 110; i++)
+  for (i = width / 2 - 5; i < width / 2 + 5; i++)
   {
-    for (j = 100; j < 110; j++)
+    for (j = height / 2 - 5; j < height / 2 + 5; j++)
     {
       oldGrid[i][j].b = 1;
     }
@@ -43,8 +43,8 @@ function draw()
     {
       var A = oldGrid[i][j].a;
       var B = oldGrid[i][j].b;
-      newGrid[i][j].a = A + (dA * laplaceA(i, j)  - A * B * B + feed * (1 - A)) * deltaT;
-      newGrid[i][j].b = B + (dB * laplaceB(i, j)  + A * B * B - (kill + feed) * B) * deltaT;
+      newGrid[i][j].a = A + (dA * laplace(i, j, 'A')  - A * B * B + feed * (1 - A)) * deltaT;
+      newGrid[i][j].b = B + (dB * laplace(i, j, 'B')  + A * B * B - (kill + feed) * B) * deltaT;
     }
   }
   
@@ -73,36 +73,57 @@ function swapGrids()
   newGrid = temp;
 }
 
-function laplaceA(i, j)
+function laplace(i, j, who)
 {
   var sum = 0;
+  var count = 0;
   
-  sum += oldGrid[i][j].a * -1;
-  sum += oldGrid[i - 1][j].a * 0.2;
-  sum += oldGrid[i + 1][j].a * 0.2;
-  sum += oldGrid[i][j + 1].a * 0.2;
-  sum += oldGrid[i][j - 1].a * 0.2;
-  sum += oldGrid[i - 1][j - 1].a * 0.05;
-  sum += oldGrid[i + 1][j - 1].a * 0.05;
-  sum += oldGrid[i + 1][j + 1].a * 0.05;
-  sum += oldGrid[i - 1][j + 1].a * 0.05;
+  switch (who)
+  {
+    case 'A':
+      for (let x = i - 1; x <= i + 1; x++)
+      {
+        for (let y = j - 1; y <= j + 1; y++)
+        {
+          count++;
+          if (count == 5)
+          {
+            sum += oldGrid[x][y].a * -1;
+          }
+          else if (count % 2 == 0)
+          {
+            sum += oldGrid[x][y].a * 0.2;
+          }
+          else if (count % 2 == 1)
+          {
+            sum += oldGrid[x][y].a * 0.05;
+          }
+        }
+      }
+      break;
+    case 'B':
+      for (let x = i - 1; x <= i + 1; x++)
+      {
+        for (let y = j - 1; y <= j + 1; y++)
+        {
+          count++;
+          if (count == 5)
+          {
+            sum += oldGrid[x][y].b * -1;
+          }
+          else if (count % 2 == 0)
+          {
+            sum += oldGrid[x][y].b * 0.2;
+          }
+          else if (count % 2 == 1)
+          {
+            sum += oldGrid[x][y].b * 0.05;
+          }
+        }
+      }
+      break;
+  }
   
-  return sum;
-}
-
-function laplaceB(i, j)
-{
-  var sum = 0;
-  
-  sum += oldGrid[i][j].b * -1;
-  sum += oldGrid[i - 1][j].b * 0.2;
-  sum += oldGrid[i + 1][j].b * 0.2;
-  sum += oldGrid[i][j + 1].b * 0.2;
-  sum += oldGrid[i][j - 1].b * 0.2;
-  sum += oldGrid[i - 1][j - 1].b * 0.05;
-  sum += oldGrid[i + 1][j - 1].b * 0.05;
-  sum += oldGrid[i + 1][j + 1].b * 0.05;
-  sum += oldGrid[i - 1][j + 1].b * 0.05;
   
   return sum;
 }
